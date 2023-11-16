@@ -149,8 +149,6 @@ class Information():
 
         count_room, count_area, flour = Information.get_tag(soup)
         money, teg_money = Information.get_money(soup)
-        
-        tag = ""
 
         if not district:
             tag_district = city
@@ -160,7 +158,7 @@ class Information():
         main_caption = (f"🏡{count_room}к кв\n"
             f"🏢Поверх: {flour}\n"
             f"🔑Площа: {count_area}м2\n"
-            f'📍М./Район: {city}{"/"+district}\n'
+            f'📍Район: {tag_district}\n'
             f"💳️{money}"
             f"\n\n{header}\n\n"
             f"📝Опис: {caption}"
@@ -177,22 +175,30 @@ class Information():
     
 # Отримання тегу залежно від ціни
 def get_tags_for_money(price): #good
-    if 0 <= price <= 1999:
-        return "0-2000грн"
-    elif 2000 <= price <= 4999:
-        return "20005000грн"
-    elif 5000 <= price <= 6999:
+    if 0 <= price <= 6999:
         return "50007000грн"
     elif 7000 <= price <= 8999:
         return "70009000грн"
     elif 9000 <= price <= 11999:
-        return "900012000грн"
+        return "50007000грн"
     elif 12000 <= price <= 13999:
         return "1200014000грн"
     elif 14000 <= price <= 14999:
         return "1400015000грн"
-    elif price >= 15000:
-        return "Выше15000грн"
+    elif 15000 <= price <= 17999:
+        return "1500018000грн"
+    elif 18000 <= price <= 19999:
+        return "1800020000грн"
+    elif 20000 <= price <= 24999:
+        return "2000025000грн"
+    elif 25000 <= price <= 29999:
+        return "2500030000грн"
+    elif 30000 <= price <= 34999:
+        return "3000035000грн"
+    elif 35000 <= price <= 39999:
+        return "3500040000грн"
+    elif price >= 40000:
+        return "Выше40000грн"
     
 
 # Отримання всіх даних і запуск надсилання

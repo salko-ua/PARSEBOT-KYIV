@@ -4,7 +4,7 @@ from main import bot
 from aiogram.filters.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from handlers.parser import get_data, Information
-from handlers.keyboards import edit_kb, repost_kb
+from handlers.keyboards import repost_kb
 
 router = Router()
 
@@ -23,14 +23,14 @@ async def start(message: types.Message):
 
 @router.message(F.text.startswith("https://www.olx.ua/"))
 async def main(message: types.Message, state: FSMContext):
-    # try:
-    await get_data(message, state)
-    # except Exception as ex:
-    #     await message.answer(
-    #         f"Виникла помилка ❌\nСторінку не вдалося обробити\n",
-    #         reply_markup=types.ReplyKeyboardRemove(),
-    #     )
-    #     print(ex)
+    try:
+        await get_data(message, state)
+    except Exception:
+        await message.answer(
+            f"Виникла помилка ❌\nСторінку не вдалося обробити\n",
+            reply_markup=types.ReplyKeyboardRemove(),
+        )
+
 
 @router.callback_query(F.data == "Репост в канал ▶️", Edit.control)
 async def repost_to_channel(query: types.CallbackQuery, state: FSMContext):
@@ -44,8 +44,8 @@ async def repost_to_channel(query: types.CallbackQuery, state: FSMContext):
     await state.clear()
     await query.message.edit_reply_markup(reply_markup=None)
 
-    media_messages = await bot.send_media_group(-4074685716, media=media_group)
-    await bot.edit_message_caption(chat_id=-4074685716, 
+    media_messages = await bot.send_media_group(-1001610806063, media=media_group)
+    await bot.edit_message_caption(chat_id=-1001610806063, 
                                    message_id=media_messages[0].message_id,
                                    caption=full_caption)
 
@@ -57,17 +57,14 @@ async def edit_number(query: types.CallbackQuery, state: FSMContext):
 
 @router.message(Edit.phone_number)
 async def edit_number(message: types.Message, state: FSMContext):
-    if not message.text.startswith("+380"):
-        await message.answer("Ви ввели невірний формат номеру 🔴\nВірний формат: +380xxxxxxxxx")
-    elif message.text.startswith("+380"):
-        await state.update_data(phone_number=message.text)
-        data = await state.get_data()
-        soup = data["soup"]
-        first_photo = Information.get_photo(soup, False)
-        caption = Information.create_pieces_caption(soup)
-        all_caption = Information.get_edit_caption(caption, phone_number=message.text)
-        await message.answer_photo(caption=all_caption, photo=first_photo, reply_markup=repost_kb())
-        await state.set_state(Edit.control)
+    await state.update_data(phone_number=message.text)
+    data = await state.get_data()
+    soup = data["soup"]
+    first_photo = Information.get_photo(soup, False)
+    caption = Information.create_pieces_caption(soup)
+    all_caption = Information.get_edit_caption(caption, phone_number=message.text)
+    await message.answer_photo(caption=all_caption, photo=first_photo, reply_markup=repost_kb())
+    await state.set_state(Edit.control)
 
 @router.message()
 async def all_message(message: types.Message):
