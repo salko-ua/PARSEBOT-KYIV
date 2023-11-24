@@ -31,7 +31,7 @@ jobs:
       with:
         context: .
         push: ${{ github.event_name != 'pull_request' }}
-        tags: salkoua/parsebot:latest
+        tags: salkoua/parsebotkyiv:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
