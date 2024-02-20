@@ -4,8 +4,8 @@ from aiogram import types
 from bs4 import BeautifulSoup
 from aiogram.fsm.context import FSMContext
 from typing import Optional
-from handlers import keyboards
-from handlers import telegram
+from src.handlers import keyboards
+from src.handlers import telegram
 
 def get_url(url):
     response = requests.get(url)
