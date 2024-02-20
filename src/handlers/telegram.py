@@ -1,8 +1,8 @@
+from src.handlers.parser import *
 from aiogram import F, Router, types
 from aiogram.filters import Command
 from aiogram.filters.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
-from src.handlers.parser import get_data, Information
 from src.handlers.keyboards import repost_kb
 
 router = Router()
@@ -39,9 +39,9 @@ async def repost_to_channel(query: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     soup = data["soup"]
     phone_number = data["phone_number"]
-    media_group = Information.get_photo(soup, True)
-    caption = Information.create_pieces_caption(soup)
-    full_caption = Information.get_edit_caption(caption, phone_number)
+    media_group = get_photo(soup, True)
+    caption = create_pieces_caption(soup)
+    full_caption = get_edit_caption(caption, phone_number)
 
     await state.clear()
     await query.message.edit_reply_markup(reply_markup=None)
@@ -66,9 +66,9 @@ async def edit_number(message: types.Message, state: FSMContext):
     await state.update_data(phone_number=message.text)
     data = await state.get_data()
     soup = data["soup"]
-    first_photo = Information.get_photo(soup, False)
-    caption = Information.create_pieces_caption(soup)
-    all_caption = Information.get_edit_caption(caption, phone_number=message.text)
+    first_photo = get_photo(soup, False)
+    caption = create_pieces_caption(soup)
+    all_caption = get_edit_caption(caption, phone_number=message.text)
     await message.answer_photo(caption=all_caption, photo=first_photo, reply_markup=repost_kb())
     await state.set_state(Edit.control)
 

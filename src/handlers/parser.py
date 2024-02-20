@@ -14,162 +14,169 @@ def get_url(url):
     return soup
 
 
-class Information:
-    def get_photo(soup: BeautifulSoup, a_lot_of: bool) -> [list, types.URLInputFile]:
-        photo = soup.find("div", class_="swiper-wrapper").find_all("img")
+def get_photo(soup: BeautifulSoup, a_lot_of: bool) -> [list, types.URLInputFile]:
+    photo = soup.find("div", class_="swiper-wrapper").find_all("img")
 
-        list_src_photo = []
-        media_group = []
+    list_src_photo = []
+    media_group = []
 
-        for src in photo:
-            list_src_photo.append(src.get("src"))
+    for src in photo:
+        list_src_photo.append(src.get("src"))
 
-        if len(list_src_photo) > 10:
-            del list_src_photo[10:]
+    if len(list_src_photo) > 10:
+        del list_src_photo[10:]
 
-        for photo_url in list_src_photo:
-            media_group.append(types.InputMediaPhoto(media=photo_url))
+    for photo_url in list_src_photo:
+        media_group.append(types.InputMediaPhoto(media=photo_url))
 
-        first_photo = types.URLInputFile(str(list_src_photo[0]))
+    first_photo = types.URLInputFile(str(list_src_photo[0]))
 
-        if not a_lot_of:
-            return first_photo
+    if not a_lot_of:
+        return first_photo
 
-        return media_group
+    return media_group
 
-    def get_tag(soup: BeautifulSoup) -> [int, int, str]:
 
-        NEED_WORDS_RUSSIAN = ["Количество комнат:", "Общая площадь:", "Этаж:", "Этажность:"]
-        NEED_WORDS_UKRAINIAN = ["Кількість кімнат:", "Загальна площа:", "Поверх:", "Поверховість:"]
+def get_tag(soup: BeautifulSoup) -> [int, int, str]:
 
-        tags = soup.find("ul", class_="css-sfcl1s").find_all("p")
-        all_tag_text = []
+    NEED_WORDS_RUSSIAN = ["Количество комнат:", "Общая площадь:", "Этаж:", "Этажность:"]
+    NEED_WORDS_UKRAINIAN = ["Кількість кімнат:", "Загальна площа:", "Поверх:", "Поверховість:"]
 
-        for need_word in NEED_WORDS_RUSSIAN:
-            for tag in tags:
-                if need_word in tag.text:
-                    all_tag_text.append(tag.text)
+    tags = soup.find("ul", class_="css-sfcl1s").find_all("p")
+    all_tag_text = []
 
-        for need_word in NEED_WORDS_UKRAINIAN:
-            for tag in tags:
-                if need_word in tag.text:
-                    all_tag_text.append(tag.text)
+    for need_word in NEED_WORDS_RUSSIAN:
+        for tag in tags:
+            if need_word in tag.text:
+                all_tag_text.append(tag.text)
 
-        count_room = int((re.search(r"\d+", all_tag_text[0])).group())
-        count_area = int((re.search(r"\d+", all_tag_text[1])).group())
-        flour_have = int((re.search(r"\d+", all_tag_text[2])).group())
-        flour_everything = int((re.search(r"\d+", all_tag_text[3])).group())
-        flour = f"{flour_have}/{flour_everything}"
+    for need_word in NEED_WORDS_UKRAINIAN:
+        for tag in tags:
+            if need_word in tag.text:
+                all_tag_text.append(tag.text)
 
-        return count_room, count_area, flour
+    count_room = int((re.search(r"\d+", all_tag_text[0])).group())
+    count_area = int((re.search(r"\d+", all_tag_text[1])).group())
+    flour_have = int((re.search(r"\d+", all_tag_text[2])).group())
+    flour_everything = int((re.search(r"\d+", all_tag_text[3])).group())
+    flour = f"{flour_have}/{flour_everything}"
 
-    def get_money(soup: BeautifulSoup) -> [str, str]:
+    return count_room, count_area, flour
 
-        money = soup.find("h2", text=re.compile(r".*грн.*"))
 
-        if not money:
-            money = soup.find("h3", text=re.compile(r".*грн.*"))
+def get_money(soup: BeautifulSoup) -> [str, str]:
 
-        if not money:
-            money = soup.find("h4", text=re.compile(r".*грн.*"))
+    money = soup.find("h2", text=re.compile(r".*грн.*"))
 
-        if not money:
-            return "Суму не знайдено", "#0грн"
+    if not money:
+        money = soup.find("h3", text=re.compile(r".*грн.*"))
 
-        without_space = "".join(money.text.split())
-        price = int((re.search(r"\d+", without_space)).group())
+    if not money:
+        money = soup.find("h4", text=re.compile(r".*грн.*"))
 
-        return money.text, get_tags_for_money(price)
+    if not money:
+        return "Суму не знайдено", "#0грн"
 
-    def get_caption(soup: BeautifulSoup) -> str:
+    without_space = "".join(money.text.split())
+    price = int((re.search(r"\d+", without_space)).group())
 
-        caption = soup.find("div", class_="css-1t507yq er34gjf0")
+    return money.text, get_tags_for_money(price)
 
-        if not caption:
-            return "Описание не найдено"
 
-        if len(caption.text) > 800:
-            return caption.text[0:800]
+def get_caption(soup: BeautifulSoup) -> str:
 
-        return caption.text
+    caption = soup.find("div", class_="css-1t507yq er34gjf0")
 
-    def get_header(soup: BeautifulSoup) -> [str, str]:
+    if not caption:
+        return "Описание не найдено"
 
-        header = soup.find("h4", class_="css-1juynto")
+    if len(caption.text) > 800:
+        return caption.text[0:800]
 
-        if not header:
-            return None
+    return caption.text
 
-        return header.text
 
-    def get_city_and_district(soup: BeautifulSoup) -> str:
-        find = soup.find_all("script")
+def get_header(soup: BeautifulSoup) -> [str, str]:
 
-        pattern_district = re.compile(r'\\"districtName\\":\\"([^\\"]+)\\"')
-        pattern_city = re.compile(r'\\"cityName\\":\\"([^\\"]+)\\"')
+    header = soup.find("h4", class_="css-1juynto")
 
-        for one in find:
-            district = pattern_district.search(one.text)
-            if district:
-                break
+    if not header:
+        return None
 
-        for one in find:
-            city = pattern_city.search(one.text)
-            if city:
-                break
+    return header.text
 
-        if city and district:
-            return city.group(1), district.group(1)
 
-        if city and not district:
-            return city.group(1), ""
-        elif not city and district:
-            return "", district.group(1)
+def get_city_and_district(soup: BeautifulSoup) -> str:
+    find = soup.find_all("script")
 
-        if not city:
-            city = ""
+    pattern_district = re.compile(r'\\"districtName\\":\\"([^\\"]+)\\"')
+    pattern_city = re.compile(r'\\"cityName\\":\\"([^\\"]+)\\"')
 
-        if not district:
-            district = ""
+    for one in find:
+        district = pattern_district.search(one.text)
+        if district:
+            break
 
-        return city, district
+    for one in find:
+        city = pattern_city.search(one.text)
+        if city:
+            break
 
-    def get_owner(soup: BeautifulSoup) -> str:
-        return soup.find("h4", class_="css-1lcz6o7 er34gjf0").text
+    if city and district:
+        return city.group(1), district.group(1)
 
-    def create_pieces_caption(soup: BeautifulSoup) -> str:
-        caption = Information.get_caption(soup)
-        header = Information.get_header(soup)
-        city, district = Information.get_city_and_district(soup)
-        owner = Information.get_owner(soup)
+    if city and not district:
+        return city.group(1), ""
+    elif not city and district:
+        return "", district.group(1)
 
-        count_room, count_area, flour = Information.get_tag(soup)
-        money, teg_money = Information.get_money(soup)
+    if not city:
+        city = ""
 
-        if not district:
-            tag_district = city
-        elif district:
-            tag_district = district
+    if not district:
+        district = ""
 
-        main_caption = (
-            f"🏡{count_room}к кв\n"
-            f"🏢Поверх: {flour}\n"
-            f"🔑Площа: {count_area}м2\n"
-            f"📍Район: {tag_district}\n"
-            f"💳️{money}"
-            f"\n\n{header}\n\n"
-            f"📝Опис: {caption}"
-            f"\n\n#{count_room}ККВ #{teg_money} #{tag_district}\n\n"
-            f"📞Зв`язок тут:\n"
-            f"👤Власник: {owner}\n"
-        )
+    return city, district
 
-        return main_caption
 
-    def get_edit_caption(caption, phone_number: Optional[str] = None):
-        if phone_number == None:
-            phone_number = ""
-        return f"{caption}📱Номер: {phone_number}"
+def get_owner(soup: BeautifulSoup) -> str:
+    return soup.find("h4", class_="css-1lcz6o7 er34gjf0").text
+
+
+def create_pieces_caption(soup: BeautifulSoup) -> str:
+    caption = get_caption(soup)
+    header = get_header(soup)
+    city, district = get_city_and_district(soup)
+    owner = get_owner(soup)
+
+    count_room, count_area, flour = get_tag(soup)
+    money, teg_money = get_money(soup)
+
+    if not district:
+        tag_district = city
+    elif district:
+        tag_district = district
+
+    main_caption = (
+        f"🏡{count_room}к кв\n"
+        f"🏢Поверх: {flour}\n"
+        f"🔑Площа: {count_area}м2\n"
+        f"📍Район: {tag_district}\n"
+        f"💳️{money}"
+        f"\n\n{header}\n\n"
+        f"📝Опис: {caption}"
+        f"\n\n#{count_room}ККВ #{teg_money} #{tag_district}\n\n"
+        f"📞Зв`язок тут:\n"
+        f"👤Власник: {owner}\n"
+    )
+
+    return main_caption
+
+
+def get_edit_caption(caption, phone_number: Optional[str] = None):
+    if phone_number == None:
+        phone_number = ""
+    return f"{caption}📱Номер: {phone_number}"
 
 
 def get_tags_for_money(price):  # good
@@ -201,8 +208,8 @@ def get_tags_for_money(price):  # good
 
 async def get_data(message: types.Message, state: FSMContext):
     soup: BeautifulSoup = get_url(message.text)
-    first_photo = Information.get_photo(soup, False)
-    caption = Information.create_pieces_caption(soup)
+    first_photo = get_photo(soup, False)
+    caption = create_pieces_caption(soup)
 
     await state.set_state(telegram.Edit.control)
     await state.update_data(soup=soup)
