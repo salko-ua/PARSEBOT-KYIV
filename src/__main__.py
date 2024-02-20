@@ -7,7 +7,7 @@ from src.handlers import telegram
 
 
 async def start_bot():
-    bot = Bot(token=TOKEN, parse_mode="HTML")
+    bot = Bot(token=TOKEN)
     dp = Dispatcher()
 
     dp.include_router(telegram.router)
