@@ -48,6 +48,11 @@ urllib3 = "^2.2.1"
 wsproto = "^1.2.0"
 yarl = "^1.9.4"
 
+[tool.poetry.group.docker]
+optional = true
+
+[tool.poetry.group.docker.dependencies]
+dumb-init = "~1.2"
 
 [build-system]
 requires = ["poetry-core"]
