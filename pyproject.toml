@@ -4,7 +4,6 @@ version = "0.1.0"
 description = ""
 authors = ["salko-ua <chips69jamil69game@gmail.com>"]
 readme = "README.md"
-packages = [{include = "parsebot_kyiv"}]
 
 [tool.poetry.dependencies]
 python = "^3.12"
