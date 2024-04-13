@@ -1,5 +1,6 @@
 import asyncio
 import apykuma
+import logging
 
 from aiogram import Bot, Dispatcher
 from src.config import TOKEN, KUMA_TOKEN
@@ -19,4 +20,5 @@ async def start_bot():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     asyncio.run(start_bot())
